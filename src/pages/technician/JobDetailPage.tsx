@@ -10,7 +10,7 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import type { JobPhoto, Order } from '../../types';
-import { ArrowLeft, MapPin, Upload, X, CheckCircle, Sparkles } from 'lucide-react';
+import { ArrowLeft, MapPin, Upload, X, CheckCircle, Sparkles, Phone, Wrench, FileText, DollarSign, ExternalLink, MessageCircle } from 'lucide-react';
 
 const MAX_PHOTOS = 6;
 
@@ -23,6 +23,7 @@ export default function JobDetailPage() {
   const [photos, setPhotos] = useState<JobPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [starting, setStarting] = useState(false);
+  const [otwSent, setOtwSent] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [extracting, setExtracting] = useState(false);
@@ -51,6 +52,17 @@ export default function JobDetailPage() {
     setStarting(true);
     try {
       await updateOrderStatus(order.id, 'Assigned', 'In Progress', 'technician', user?.name ?? '');
+      if (order.customer_phone) {
+        notifyCustomer({
+          customerPhone: order.customer_phone,
+          customerName: order.customer_name,
+          orderNo: order.order_no,
+          serviceType: order.service_type,
+          technicianName: user?.name ?? 'our technician',
+          type: 'otw',
+        });
+        setOtwSent(true);
+      }
       load();
     } finally {
       setStarting(false);
@@ -140,55 +152,105 @@ export default function JobDetailPage() {
   if (loading) return <div className="py-20"><LoadingSpinner /></div>;
   if (!order) return <p className="text-center text-gray-500">Job not found</p>;
 
+  const mapsUrl = order.latitude && order.longitude
+    ? `https://maps.google.com/maps?q=${order.latitude},${order.longitude}`
+    : `https://maps.google.com/maps?q=${encodeURIComponent(order.customer_address)}`;
+
   return (
-    <div className="max-w-lg mx-auto space-y-4 pb-20">
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate('/technician/jobs')} className="text-gray-400 hover:text-gray-600">
+    <div className="max-w-lg mx-auto space-y-3 pb-20">
+
+      {/* Header */}
+      <div className="flex items-center gap-3 pt-1">
+        <button onClick={() => navigate('/technician/jobs')} className="p-1 -ml-1 text-gray-400 hover:text-gray-600 transition-colors">
           <ArrowLeft size={20} />
         </button>
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <span className="font-mono text-sm text-blue-600 font-medium">{order.order_no}</span>
+            <span className="font-mono text-xs text-blue-600 font-semibold tracking-wide">{order.order_no}</span>
             <StatusBadge status={order.status} />
           </div>
-          <p className="font-bold text-gray-900">{order.customer_name}</p>
         </div>
       </div>
 
-      <Card>
-        <CardBody className="space-y-2 text-sm">
-          <div className="flex items-start gap-2 text-gray-600 min-w-0">
-            <MapPin size={16} className="mt-0.5 flex-shrink-0 text-gray-400" />
-            <span className="truncate" title={order.customer_address}>{order.customer_address}</span>
+      {/* Customer card */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+        <p className="text-lg font-bold text-gray-900 leading-tight">{order.customer_name}</p>
+        {order.customer_phone && (
+          <a
+            href={`tel:${order.customer_phone}`}
+            className="inline-flex items-center gap-1.5 mt-1 text-sm text-blue-600 font-medium active:opacity-70"
+          >
+            <Phone size={13} />
+            {order.customer_phone}
+          </a>
+        )}
+      </div>
+
+      {/* Service & Problem */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm divide-y divide-gray-50">
+        <div className="flex items-center gap-3 px-4 py-3">
+          <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+            <Wrench size={14} className="text-blue-500" />
           </div>
-          {order.customer_phone && (
-            <div className="flex justify-between">
-              <span className="text-gray-500">Phone</span>
-              <span className="font-medium">{order.customer_phone}</span>
+          <div className="min-w-0">
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Service</p>
+            <p className="text-sm font-semibold text-gray-800">{order.service_type}</p>
+          </div>
+        </div>
+        {order.problem_description && (
+          <div className="flex items-start gap-3 px-4 py-3">
+            <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <FileText size={14} className="text-orange-400" />
             </div>
-          )}
-          <div className="flex justify-between">
-            <span className="text-gray-500">Service</span>
-            <span className="font-medium">{order.service_type}</span>
-          </div>
-          <div className="flex justify-between">
-            <span className="text-gray-500">Quoted Price</span>
-            <span className="font-medium">RM {order.quoted_price.toFixed(2)}</span>
-          </div>
-          {order.problem_description && (
-            <div>
-              <span className="text-gray-500">Problem: </span>
-              <span>{order.problem_description}</span>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Problem</p>
+              <p className="text-sm text-gray-700 leading-snug">{order.problem_description}</p>
             </div>
-          )}
-        </CardBody>
-      </Card>
+          </div>
+        )}
+      </div>
+
+      {/* Quoted Price */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-full bg-green-50 flex items-center justify-center flex-shrink-0">
+          <DollarSign size={14} className="text-green-500" />
+        </div>
+        <div className="flex-1">
+          <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Quoted Price</p>
+          <p className="text-base font-bold text-gray-900">RM {order.quoted_price.toFixed(2)}</p>
+        </div>
+      </div>
+
+      {/* Address / Map */}
+      <a
+        href={mapsUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-3 bg-white rounded-2xl border border-blue-200 shadow-sm px-4 py-3 active:bg-blue-50 transition-colors group"
+      >
+        <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+          <MapPin size={14} className="text-blue-500" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Open Map</p>
+          <p className="text-sm text-blue-600 font-medium leading-snug">{order.customer_address}</p>
+        </div>
+        <ExternalLink size={14} className="text-blue-400 flex-shrink-0" />
+      </a>
 
       {/* Start job */}
       {order.status === 'Assigned' && (
         <Button className="w-full" size="lg" loading={starting} onClick={handleStart}>
           Start Job
         </Button>
+      )}
+
+      {/* OTW WhatsApp sent indicator */}
+      {otwSent && order.customer_phone && (
+        <div className="flex items-center gap-2 bg-green-50 border border-green-100 rounded-xl px-4 py-2.5">
+          <MessageCircle size={15} className="text-green-500 flex-shrink-0" />
+          <p className="text-sm text-green-700">WhatsApp sent — customer has been notified you're on the way.</p>
+        </div>
       )}
 
       {/* Complete job form */}

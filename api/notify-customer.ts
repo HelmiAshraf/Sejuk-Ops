@@ -16,7 +16,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { customerPhone, customerName, orderNo, serviceType, technicianName } = req.body ?? {};
+  const { customerPhone, customerName, orderNo, serviceType, technicianName, type = 'completed' } = req.body ?? {};
 
   if (!customerPhone || !customerName || !orderNo || !serviceType || !technicianName) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -34,11 +34,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (phone.startsWith('0')) phone = '60' + phone.slice(1);
   if (!phone.startsWith('60')) phone = '60' + phone;
 
-  const message =
-    `Hi ${customerName} 👋\n\n` +
-    `Your *${serviceType}* service (${orderNo}) has been completed by our technician *${technicianName}*.\n\n` +
-    `How was your experience? Your feedback helps us improve our service! 🙏\n\n` +
-    `Reply to this message and let us know. Thank you for choosing *Sejuk Sejuk Service* ❄️`;
+  const message = type === 'otw'
+    ? `Hi ${customerName} 👋\n\n` +
+      `Our technician *${technicianName}* is on the way to your place for the *${serviceType}* service (${orderNo}).\n\n` +
+      `Please be ready to receive our technician. See you soon! 🔧`
+    : `Hi ${customerName} 👋\n\n` +
+      `Your *${serviceType}* service (${orderNo}) has been completed by our technician *${technicianName}*.\n\n` +
+      `How was your experience? Your feedback helps us improve our service! 🙏\n\n` +
+      `Reply to this message and let us know. Thank you for choosing *Sejuk Sejuk Service* ❄️`;
 
   try {
     const url = `https://api.green-api.com/waInstance${instanceId}/sendMessage/${token}`;

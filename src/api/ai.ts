@@ -106,6 +106,7 @@ export async function notifyCustomer(payload: {
   orderNo: string;
   serviceType: string;
   technicianName: string;
+  type?: 'otw' | 'completed';
 }): Promise<void> {
   await fetch('/api/notify-customer', {
     method: 'POST',

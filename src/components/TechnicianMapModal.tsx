@@ -3,7 +3,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { Order, TechnicianWithWorkload } from '../types';
 import {
-  X, Navigation, MapPin, Zap, Phone, Briefcase,
+  X, Navigation, MapPin, Phone, Briefcase,
   ChevronDown, ChevronUp, Sparkles, Loader2, Crosshair, CheckCircle2,
 } from 'lucide-react';
 

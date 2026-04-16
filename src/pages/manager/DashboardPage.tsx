@@ -135,12 +135,6 @@ export default function DashboardPage() {
   const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
   const dateStr = now.toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
-  const QUICK_ASKS = [
-    'Top technician this week?',
-    'Jobs with no photos?',
-    "Today's revenue?",
-    'Anyone overloaded?',
-  ];
 
   const h = 'calc(100dvh - 56px - 64px)';
 

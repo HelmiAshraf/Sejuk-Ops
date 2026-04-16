@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { AppGate } from './components/AppGate';
 import { AppShell } from './components/layout/AppShell';
 import LoginPage from './pages/LoginPage';
 import OrdersPage from './pages/admin/OrdersPage';
@@ -67,10 +68,12 @@ function AppRoutes() {
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <AuthProvider>
-        <AppRoutes />
-      </AuthProvider>
-    </BrowserRouter>
+    <AppGate>
+      <BrowserRouter>
+        <AuthProvider>
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
+    </AppGate>
   );
 }

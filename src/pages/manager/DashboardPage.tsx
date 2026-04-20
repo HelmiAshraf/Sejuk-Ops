@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { getOrders } from '../../api/orders';
 import { queryAIStream, type ConversationMessage } from '../../api/ai';
 import { supabase } from '../../lib/supabase';
@@ -506,8 +507,8 @@ export default function DashboardPage() {
       </div>
 
       {/* ───────────────── MOBILE · Full-screen chat ───────────────── */}
-      {mobileAiOpen && (
-        <div className="md:hidden fixed inset-0 z-50 flex flex-col bg-white">
+      {mobileAiOpen && createPortal(
+        <div className="md:hidden fixed inset-0 z-[100] flex flex-col bg-white">
           {/* Header */}
           <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-5 pb-4 flex-shrink-0"
                style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
@@ -642,7 +643,7 @@ export default function DashboardPage() {
             <p className="text-[10px] text-slate-400 mt-1.5 text-center">AI-generated responses may not always be accurate. Verify important data.</p>
           </div>
         </div>
-      )}
+      , document.body)}
     </div>
   );
 }

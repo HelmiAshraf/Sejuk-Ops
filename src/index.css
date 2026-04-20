@@ -63,3 +63,16 @@ img, a {
 .safe-top {
   padding-top: env(safe-area-inset-top);
 }
+
+/* Dashboard: natural scroll on mobile, fixed split-panel on desktop */
+.dashboard-container {
+  height: auto;
+  overflow: visible;
+}
+@media (min-width: 768px) {
+  .dashboard-container {
+    height: calc(100dvh - 56px - 2rem - env(safe-area-inset-top));
+    overflow: hidden;
+    min-height: 0;
+  }
+}

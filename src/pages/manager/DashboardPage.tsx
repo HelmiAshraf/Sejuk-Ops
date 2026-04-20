@@ -199,11 +199,10 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="-mx-4 -mb-4 md:-mx-8 md:-mb-8 md:flex md:rounded-none md:border-t md:border-slate-200 md:shadow-sm bg-white relative overflow-hidden"
-         style={{ height: 'calc(100dvh - 56px - 2rem - env(safe-area-inset-top))', minHeight: 0 }}>
+    <div className="dashboard-container -mx-4 -mb-4 md:-mx-8 md:-mb-8 md:flex md:rounded-none md:border-t md:border-slate-200 md:shadow-sm bg-white relative">
 
       {/* ───────────────── LEFT · Dashboard ───────────────── */}
-      <div className="flex-1 min-w-0 md:border-r border-slate-200 transition-all duration-300 overflow-y-auto pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
+      <div className="flex-1 min-w-0 md:border-r border-slate-200 transition-all duration-300 md:overflow-y-auto pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
 
         {/* Page header */}
         <div className="px-5 md:px-6 pt-5 pb-4 border-b border-slate-100 bg-white sticky top-0 z-10">

@@ -52,7 +52,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     <div className="flex flex-col bg-gray-50" style={{ minHeight: '100dvh' }}>
 
       {/* ── Top Bar ─────────────────────────────────────────────────────────── */}
-      <header className="bg-white border-b border-gray-100 flex-shrink-0 sticky top-0 z-40 shadow-sm">
+      <header
+        className="bg-white border-b border-gray-100 flex-shrink-0 sticky top-0 z-40 shadow-sm"
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
         <div className="flex items-center justify-between px-4 md:px-6 h-14">
 
           {/* Brand */}
@@ -108,7 +111,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
             {/* Dropdown */}
             {dropdownOpen && (
-              <div className="absolute top-[3.75rem] right-3 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 min-w-[180px] z-50">
+              <div className="absolute right-3 bg-white rounded-2xl shadow-xl border border-gray-100 py-1.5 min-w-[180px] z-50" style={{ top: 'calc(3.75rem + env(safe-area-inset-top))' }}>
                 <div className="px-4 py-2.5 border-b border-gray-50 mb-1">
                   <p className="text-sm font-semibold text-gray-900">{user?.name}</p>
                   <p className="text-xs text-gray-400 capitalize mt-0.5">{user?.role}</p>

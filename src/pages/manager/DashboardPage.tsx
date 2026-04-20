@@ -490,7 +490,7 @@ export default function DashboardPage() {
       </div>
 
       {/* ───────────────── MOBILE · FAB ───────────────── */}
-      <div className="md:hidden fixed bottom-6 right-6 z-50">
+      <div className="md:hidden fixed right-6 z-50" style={{ bottom: 'calc(5.5rem + env(safe-area-inset-bottom))' }}>
         {/* Label badge top-left of button */}
         <div className="absolute -top-2 -left-2 pointer-events-none">
           <span className="bg-blue-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full shadow leading-tight whitespace-nowrap">

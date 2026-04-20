@@ -270,8 +270,8 @@ export default function JobDetailPage() {
         </div>
         {order.problem_description && (
           <div className="flex items-start gap-3 px-4 py-3">
-            <div className="w-8 h-8 rounded-full bg-orange-50 flex items-center justify-center flex-shrink-0 mt-0.5">
-              <FileText size={14} className="text-orange-400" />
+            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <FileText size={14} className="text-blue-500" />
             </div>
             <div className="min-w-0">
               <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Problem</p>
@@ -281,8 +281,8 @@ export default function JobDetailPage() {
         )}
         {order.preferred_date && (
           <div className="flex items-center gap-3 px-4 py-3">
-            <div className="w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center flex-shrink-0">
-              <CalendarDays size={14} className="text-purple-500" />
+            <div className="w-8 h-8 rounded-full bg-blue-50 flex items-center justify-center flex-shrink-0">
+              <CalendarDays size={14} className="text-blue-500" />
             </div>
             <div className="min-w-0">
               <p className="text-xs text-gray-400 font-medium uppercase tracking-wide">Preferred Date</p>

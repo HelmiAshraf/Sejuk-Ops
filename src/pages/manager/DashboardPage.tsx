@@ -8,7 +8,27 @@ import type { Order, OrderStatus } from '../../types';
 import { ArrowRight, Bot, ChevronLeft, ChevronRight, RotateCcw, Send, Sparkles, X, Wrench, Clock, CheckCircle2, DollarSign, Trophy, Zap } from 'lucide-react';
 
 interface TechStat { name: string; completed: number; inProgress: number; }
-interface AIMessage { role: 'user' | 'ai'; content: string; streaming?: boolean; }
+interface AIMessage { role: 'user' | 'ai'; content: string; streaming?: boolean; error?: boolean; }
+
+// ─── Chat Guardrails ─────────────────────────────────────────────
+const INPUT_MAX_CHARS = 500;
+const INPUT_MIN_CHARS = 2;
+const BLOCKED_TERMS = ['ignore previous', 'jailbreak', 'system prompt', 'forget instructions', 'ignore above'];
+const RATE_COOLDOWN_MS = 3000;
+const MAX_PER_MINUTE = 10;
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1500;
+
+function validateInput(text: string): string | null {
+  const trimmed = text.trim();
+  if (!trimmed || trimmed.length < INPUT_MIN_CHARS) return 'Please type a longer question.';
+  if (trimmed.length > INPUT_MAX_CHARS) return `Message too long (${trimmed.length}/${INPUT_MAX_CHARS} chars).`;
+  const lower = trimmed.toLowerCase();
+  for (const term of BLOCKED_TERMS) {
+    if (lower.includes(term)) return 'That question cannot be processed. Please ask about operations.';
+  }
+  return null;
+}
 
 const LS_KEY = 'dashboard_ai_messages';
 
@@ -48,9 +68,12 @@ export default function DashboardPage() {
   const [aiInput, setAiInput] = useState('');
   const [aiLoading, setAiLoading] = useState(false);
   const [statusText, setStatusText] = useState('');
+  const [inputError, setInputError] = useState('');
   const aiBottomRef = useRef<HTMLDivElement>(null);
   const aiInputRef = useRef<HTMLInputElement>(null);
   const briefingStarted = useRef(!!sessionStorage.getItem('dashboard_briefing_done'));
+  const lastSentRef = useRef(0);
+  const sentTimesRef = useRef<number[]>([]);
 
   useEffect(() => {
     const stable = messages.filter(m => !m.streaming);
@@ -92,21 +115,57 @@ export default function DashboardPage() {
 
   const askAI = useCallback(async (question: string, isAuto = false) => {
     if (!question.trim() || aiLoading) return;
-    setAiInput(''); setAiLoading(true); setStatusText('');
+
+    // Client-side guardrails (skip for auto-briefing)
+    if (!isAuto) {
+      const err = validateInput(question);
+      if (err) { setInputError(err); return; }
+
+      const now = Date.now();
+      if (now - lastSentRef.current < RATE_COOLDOWN_MS) {
+        setInputError('Please wait a moment before sending another message.');
+        return;
+      }
+      sentTimesRef.current = sentTimesRef.current.filter(t => now - t < 60_000);
+      if (sentTimesRef.current.length >= MAX_PER_MINUTE) {
+        setInputError('Too many messages. Please wait a minute.');
+        return;
+      }
+      sentTimesRef.current.push(now);
+      lastSentRef.current = now;
+    }
+
+    setAiInput(''); setAiLoading(true); setStatusText(''); setInputError('');
     if (!isAuto) setMessages(prev => [...prev, { role: 'user', content: question }]);
     setMessages(prev => [...prev, { role: 'ai', content: '', streaming: true }]);
     const history = isAuto ? [] : buildHistory();
+
     let out = '';
-    try {
-      for await (const ev of queryAIStream(question, history)) {
-        if (ev.type === 'status' && ev.message) setStatusText(ev.message);
-        else if (ev.type === 'delta' && ev.text) {
-          out += ev.text;
-          setMessages(prev => { const u = [...prev]; u[u.length - 1] = { role: 'ai', content: out, streaming: true }; return u; });
-        } else if (ev.type === 'error') out = ev.message ?? 'Error.';
+    let failed = false;
+    for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      if (attempt > 0) {
+        setStatusText(`Retrying... (${attempt}/${MAX_RETRIES})`);
+        await new Promise(r => setTimeout(r, RETRY_DELAY_MS));
       }
-    } catch { out = 'Could not connect.'; }
-    setMessages(prev => { const u = [...prev]; u[u.length - 1] = { role: 'ai', content: out, streaming: false }; return u; });
+      out = '';
+      try {
+        for await (const ev of queryAIStream(question, history)) {
+          if (ev.type === 'status' && ev.message) setStatusText(ev.message);
+          else if (ev.type === 'delta' && ev.text) {
+            out += ev.text;
+            setMessages(prev => { const u = [...prev]; u[u.length - 1] = { role: 'ai', content: out, streaming: true }; return u; });
+          } else if (ev.type === 'error') { out = ''; throw new Error(ev.message ?? 'Error'); }
+        }
+        if (out) { failed = false; break; }
+      } catch { failed = true; }
+    }
+
+    if (failed || !out) out = 'Sorry, I couldn\'t get a response. Please try again or use a suggested question below.';
+    setMessages(prev => {
+      const u = [...prev];
+      u[u.length - 1] = { role: 'ai', content: out, streaming: false, error: failed || !out };
+      return u;
+    });
     setAiLoading(false); setStatusText('');
     if (!isAuto) aiInputRef.current?.focus();
   }, [aiLoading, buildHistory]);
@@ -138,13 +197,14 @@ export default function DashboardPage() {
 
 
   return (
-    <div className="-mx-4 md:-mx-8 md:flex md:rounded-none md:border-y md:border-slate-200 md:shadow-sm bg-white relative">
+    <div className="-mx-4 -mb-4 md:-mx-8 md:-mb-8 md:flex md:rounded-none md:border-t md:border-slate-200 md:shadow-sm bg-white relative overflow-hidden"
+         style={{ height: 'calc(100dvh - 56px - 2rem)', minHeight: 0 }}>
 
       {/* ───────────────── LEFT · Dashboard ───────────────── */}
-      <div className="flex-1 min-w-0 md:border-r border-slate-200 transition-all duration-300">
+      <div className="flex-1 min-w-0 md:border-r border-slate-200 transition-all duration-300 overflow-y-auto">
 
         {/* Page header */}
-        <div className="px-5 md:px-6 pt-5 pb-4 border-b border-slate-100 bg-white">
+        <div className="px-5 md:px-6 pt-5 pb-4 border-b border-slate-100 bg-white sticky top-0 z-10">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-[11px] text-slate-400 font-medium">{dateStr}</p>
@@ -288,15 +348,16 @@ export default function DashboardPage() {
       <button
         onClick={() => setAiOpen(o => !o)}
         title={aiOpen ? 'Slim chat (25%)' : 'Expand chat (45%)'}
-        className="hidden md:flex sticky top-1/2 z-20 items-center justify-center w-5 h-12 rounded-l-lg bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-all duration-300 self-start mt-[40vh] -mr-0 flex-shrink-0"
+        className="hidden md:flex absolute right-0 top-1/2 -translate-y-1/2 z-20 items-center justify-center w-5 h-12 rounded-l-lg bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-all duration-300"
+        style={{ right: aiOpen ? '45%' : '25%' }}
       >
         {aiOpen ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
       </button>
 
       {/* ───────────────── RIGHT · AI Panel — desktop only ───────────────── */}
       <div
-        className="hidden md:flex flex-col bg-white overflow-hidden transition-all duration-300 self-stretch"
-        style={{ width: aiOpen ? '45%' : '25%', minHeight: 'calc(100dvh - 56px)' }}
+        className="hidden md:flex flex-col bg-white overflow-hidden transition-all duration-300"
+        style={{ width: aiOpen ? '45%' : '25%' }}
       >
         {/* Gradient header */}
         <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-5 py-4 flex-shrink-0">
@@ -324,7 +385,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-5 space-y-4 bg-slate-50">
+        <div className="flex-1 min-h-0 overflow-y-auto p-5 space-y-4 bg-slate-50">
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200 shadow-sm flex items-center justify-center mb-4">
@@ -347,7 +408,9 @@ export default function DashboardPage() {
                   <div className={`max-w-[82%] rounded-2xl text-sm leading-relaxed ${
                     msg.role === 'user'
                       ? 'bg-slate-900 text-white px-4 py-3 rounded-tr-sm shadow-sm'
-                      : 'bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-tl-sm shadow-sm'
+                      : msg.error
+                        ? 'bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-tl-sm shadow-sm'
+                        : 'bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-tl-sm shadow-sm'
                   }`}>
                     {msg.role === 'ai' ? (
                       msg.content ? (
@@ -356,6 +419,12 @@ export default function DashboardPage() {
                             <ReactMarkdown>{msg.content}</ReactMarkdown>
                           </div>
                           {msg.streaming && <span className="inline-block w-0.5 h-4 bg-blue-500 ml-0.5 align-middle animate-pulse rounded" />}
+                          {msg.error && !msg.streaming && (
+                            <button onClick={() => { const userMsg = messages.slice(0, i).reverse().find(m => m.role === 'user'); if (userMsg) askAI(userMsg.content); }}
+                              className="mt-2 text-xs font-medium text-red-600 hover:text-red-800 underline">
+                              Retry
+                            </button>
+                          )}
                         </>
                       ) : (
                         <span className="text-xs italic text-slate-400">{statusText || 'Thinking...'}</span>
@@ -369,31 +438,44 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Quick asks — horizontal scroll, shuffled order on each mount */}
-        {!aiLoading && messages.some(m => m.content && !m.streaming) && (
-          <div className="border-t border-slate-200 bg-white px-4 py-3 flex gap-1.5 overflow-x-auto no-scrollbar">
-            {shuffledAsks.map(q => (
-              <button key={q} onClick={() => askAI(q)}
-                className="text-[11px] font-medium bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition whitespace-nowrap flex-shrink-0">
-                {q}
-              </button>
-            ))}
+        {/* Quick asks */}
+        <div className="border-t border-slate-200 bg-white px-4 py-2.5 flex gap-1.5 overflow-x-auto no-scrollbar flex-shrink-0">
+          {shuffledAsks.map(q => (
+            <button key={q} onClick={() => askAI(q)} disabled={aiLoading}
+              className="text-[11px] font-medium bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition whitespace-nowrap flex-shrink-0 disabled:opacity-40">
+              {q}
+            </button>
+          ))}
+        </div>
+
+        {/* Input error */}
+        {inputError && (
+          <div className="px-4 py-1.5 bg-red-50 border-t border-red-200 flex-shrink-0">
+            <p className="text-xs text-red-600">{inputError}</p>
           </div>
         )}
 
-        {/* Input */}
+        {/* Input + char counter */}
         <div className="border-t border-slate-200 bg-white px-4 py-3 flex-shrink-0">
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:border-blue-500 focus-within:bg-white focus-within:shadow-sm transition-all">
+          <div className={`flex items-center gap-2 bg-slate-50 border rounded-xl px-4 py-2.5 focus-within:bg-white focus-within:shadow-sm transition-all ${
+            inputError ? 'border-red-300 focus-within:border-red-500' : 'border-slate-200 focus-within:border-blue-500'
+          }`}>
             <input
               ref={aiInputRef}
               type="text"
               value={aiInput}
-              onChange={e => setAiInput(e.target.value)}
+              onChange={e => { setAiInput(e.target.value); if (inputError) setInputError(''); }}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && askAI(aiInput)}
               placeholder="Ask about your operations..."
+              maxLength={INPUT_MAX_CHARS}
               disabled={aiLoading}
               className="flex-1 text-sm bg-transparent text-slate-900 placeholder:text-slate-400 focus:outline-none disabled:opacity-50 min-w-0"
             />
+            {aiInput.length > INPUT_MAX_CHARS * 0.8 && (
+              <span className={`text-[10px] font-mono flex-shrink-0 ${aiInput.length >= INPUT_MAX_CHARS ? 'text-red-500' : 'text-slate-400'}`}>
+                {aiInput.length}/{INPUT_MAX_CHARS}
+              </span>
+            )}
             <button
               onClick={() => askAI(aiInput)}
               disabled={!aiInput.trim() || aiLoading}
@@ -402,6 +484,7 @@ export default function DashboardPage() {
               <Send size={13} />
             </button>
           </div>
+          <p className="text-[10px] text-slate-400 mt-1.5 text-center">AI-generated responses may not always be accurate. Verify important data.</p>
         </div>
       </div>
 
@@ -478,7 +561,9 @@ export default function DashboardPage() {
                     <div className={`max-w-[82%] rounded-2xl text-sm leading-relaxed ${
                       msg.role === 'user'
                         ? 'bg-slate-900 text-white px-4 py-3 rounded-tr-sm shadow-sm'
-                        : 'bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-tl-sm shadow-sm'
+                        : msg.error
+                          ? 'bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-tl-sm shadow-sm'
+                          : 'bg-white border border-slate-200 text-slate-800 px-4 py-3 rounded-tl-sm shadow-sm'
                     }`}>
                       {msg.role === 'ai' ? (
                         msg.content ? (
@@ -487,6 +572,12 @@ export default function DashboardPage() {
                               <ReactMarkdown>{msg.content}</ReactMarkdown>
                             </div>
                             {msg.streaming && <span className="inline-block w-0.5 h-4 bg-blue-500 ml-0.5 align-middle animate-pulse rounded" />}
+                            {msg.error && !msg.streaming && (
+                              <button onClick={() => { const userMsg = messages.slice(0, i).reverse().find(m => m.role === 'user'); if (userMsg) askAI(userMsg.content); }}
+                                className="mt-2 text-xs font-medium text-red-600 hover:text-red-800 underline">
+                                Retry
+                              </button>
+                            )}
                           </>
                         ) : (
                           <span className="text-xs italic text-slate-400">{statusText || 'Thinking...'}</span>
@@ -501,29 +592,42 @@ export default function DashboardPage() {
           </div>
 
           {/* Quick asks */}
-          {!aiLoading && messages.some(m => m.content && !m.streaming) && (
-            <div className="border-t border-slate-200 bg-white px-4 py-3 flex gap-1.5 overflow-x-auto no-scrollbar">
-              {shuffledAsks.map(q => (
-                <button key={q} onClick={() => askAI(q)}
-                  className="text-[11px] font-medium bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition whitespace-nowrap flex-shrink-0">
-                  {q}
-                </button>
-              ))}
+          <div className="border-t border-slate-200 bg-white px-4 py-3 flex gap-1.5 overflow-x-auto no-scrollbar">
+            {shuffledAsks.map(q => (
+              <button key={q} onClick={() => askAI(q)} disabled={aiLoading}
+                className="text-[11px] font-medium bg-slate-50 border border-slate-200 rounded-full px-3 py-1.5 text-slate-500 hover:border-blue-400 hover:text-blue-600 hover:bg-blue-50 transition whitespace-nowrap flex-shrink-0 disabled:opacity-40">
+                {q}
+              </button>
+            ))}
+          </div>
+
+          {/* Input error */}
+          {inputError && (
+            <div className="px-4 py-1.5 bg-red-50 border-t border-red-200 flex-shrink-0">
+              <p className="text-xs text-red-600">{inputError}</p>
             </div>
           )}
 
-          {/* Input */}
+          {/* Input + char counter */}
           <div className="border-t border-slate-200 bg-white px-4 py-3 flex-shrink-0">
-            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 focus-within:border-blue-500 focus-within:bg-white focus-within:shadow-sm transition-all">
+            <div className={`flex items-center gap-2 bg-slate-50 border rounded-xl px-4 py-2.5 focus-within:bg-white focus-within:shadow-sm transition-all ${
+              inputError ? 'border-red-300 focus-within:border-red-500' : 'border-slate-200 focus-within:border-blue-500'
+            }`}>
               <input
                 type="text"
                 value={aiInput}
-                onChange={e => setAiInput(e.target.value)}
+                onChange={e => { setAiInput(e.target.value); if (inputError) setInputError(''); }}
                 onKeyDown={e => e.key === 'Enter' && !e.shiftKey && askAI(aiInput)}
                 placeholder="Ask about your operations..."
+                maxLength={INPUT_MAX_CHARS}
                 disabled={aiLoading}
                 className="flex-1 text-sm bg-transparent text-slate-900 placeholder:text-slate-400 focus:outline-none disabled:opacity-50 min-w-0"
               />
+              {aiInput.length > INPUT_MAX_CHARS * 0.8 && (
+                <span className={`text-[10px] font-mono flex-shrink-0 ${aiInput.length >= INPUT_MAX_CHARS ? 'text-red-500' : 'text-slate-400'}`}>
+                  {aiInput.length}/{INPUT_MAX_CHARS}
+                </span>
+              )}
               <button
                 onClick={() => askAI(aiInput)}
                 disabled={!aiInput.trim() || aiLoading}
@@ -532,6 +636,7 @@ export default function DashboardPage() {
                 <Send size={13} />
               </button>
             </div>
+            <p className="text-[10px] text-slate-400 mt-1.5 text-center">AI-generated responses may not always be accurate. Verify important data.</p>
           </div>
         </div>
       )}

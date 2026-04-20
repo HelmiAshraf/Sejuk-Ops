@@ -299,6 +299,7 @@ export default function NewOrderPage() {
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+              <p className="text-xs text-gray-400 mb-1">For demo: enter your phone number to receive WhatsApp updates</p>
               <div className="flex">
                 <span className="inline-flex items-center px-3 border border-r-0 border-gray-300 rounded-l-lg bg-gray-50 text-sm text-gray-500">+60</span>
                 <input

@@ -62,6 +62,7 @@ export interface JobCompletion {
   payment_amount: number | null;
   payment_method: PaymentMethod | null;
   receipt_photo_url: string | null;
+  payment_remarks: string | null;
 }
 
 export interface JobPhoto {

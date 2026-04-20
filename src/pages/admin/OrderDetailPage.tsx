@@ -13,7 +13,7 @@ import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import { TechnicianMapModal } from '../../components/TechnicianMapModal';
 import type { Order, AuditLog, JobCompletion, JobPhoto, TechnicianWithWorkload } from '../../types';
 import { SERVICE_TYPES } from '../../constants';
-import { ArrowLeft, User, Clock, FileText, Camera, Pencil, Check, X } from 'lucide-react';
+import { ArrowLeft, User, Clock, FileText, Camera, Pencil, Check, X, Receipt } from 'lucide-react';
 
 export default function OrderDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -304,8 +304,35 @@ export default function OrderDetailPage() {
             <p><span className="text-gray-500">Work Done:</span> {completion.work_done}</p>
             <p><span className="text-gray-500">Extra Charges:</span> <span className="font-mono">RM {completion.extra_charges.toFixed(2)}</span></p>
             <p><span className="text-gray-500">Final Amount:</span> <span className="font-bold font-mono text-green-700">RM {completion.final_amount.toFixed(2)}</span></p>
+            {completion.payment_amount != null && (
+              <p><span className="text-gray-500">Payment Received:</span> <span className="font-mono">RM {completion.payment_amount.toFixed(2)}</span> · {completion.payment_method}</p>
+            )}
             {completion.remarks && <p><span className="text-gray-500">Remarks:</span> {completion.remarks}</p>}
+            {completion.payment_remarks && <p><span className="text-gray-500">Payment Remarks:</span> {completion.payment_remarks}</p>}
             <p><span className="text-gray-500">Completed:</span> <span className="font-mono">{new Date(completion.completed_at).toLocaleString()}</span></p>
+          </CardBody>
+        </Card>
+      )}
+
+      {/* Payment Receipt */}
+      {completion?.receipt_photo_url && (
+        <Card>
+          <CardHeader><p className="font-medium text-gray-800 flex items-center gap-2"><Receipt size={16} /> Payment Receipt</p></CardHeader>
+          <CardBody>
+            <a href={completion.receipt_photo_url} target="_blank" rel="noopener noreferrer" className="block">
+              {completion.receipt_photo_url.match(/\.(jpg|jpeg|png|webp|heic)$/i) ? (
+                <img
+                  src={completion.receipt_photo_url}
+                  alt="Payment receipt"
+                  className="w-full max-h-64 object-contain rounded-lg border hover:opacity-90 transition bg-gray-50"
+                />
+              ) : (
+                <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border hover:bg-gray-100 transition text-sm text-blue-600">
+                  <Receipt size={16} />
+                  <span>View receipt document</span>
+                </div>
+              )}
+            </a>
           </CardBody>
         </Card>
       )}
@@ -318,7 +345,13 @@ export default function OrderDetailPage() {
             <div className="grid grid-cols-3 gap-3">
               {photos.map((p) => (
                 <a key={p.id} href={p.public_url} target="_blank" rel="noopener noreferrer">
-                  <img src={p.public_url} alt="job" className="w-full h-28 object-cover rounded-lg border hover:opacity-90 transition" />
+                  {p.file_type?.startsWith('image/') ? (
+                    <img src={p.public_url} alt="job" className="w-full h-28 object-cover rounded-lg border hover:opacity-90 transition" />
+                  ) : (
+                    <div className="w-full h-28 bg-gray-100 rounded-lg border flex items-center justify-center text-xs text-gray-500 hover:bg-gray-200 transition">
+                      {p.file_type?.split('/')[1]?.toUpperCase() ?? 'FILE'}
+                    </div>
+                  )}
                 </a>
               ))}
             </div>

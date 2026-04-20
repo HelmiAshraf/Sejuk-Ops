@@ -9,7 +9,7 @@ import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import type { Order, JobCompletion, JobPhoto, ManagerReview } from '../../types';
-import { CheckCircle, Flag, ImageOff, Clock, History, Pencil, Check, X, ChevronDown } from 'lucide-react';
+import { CheckCircle, Flag, ImageOff, Clock, History, Pencil, Check, X, ChevronDown, Receipt } from 'lucide-react';
 
 type Tab = 'pending' | 'history';
 
@@ -354,7 +354,36 @@ export default function ReviewPage() {
                             <p className="text-gray-700 mt-0.5">{completion.remarks}</p>
                           </div>
                         )}
+                        {completion.payment_remarks && (
+                          <div>
+                            <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Payment Remarks</span>
+                            <p className="text-gray-700 mt-0.5">{completion.payment_remarks}</p>
+                          </div>
+                        )}
                       </div>
+
+                      {/* Payment Receipt */}
+                      {completion.receipt_photo_url && (
+                        <div>
+                          <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                            <Receipt size={13} /> Payment Receipt
+                          </p>
+                          <a href={completion.receipt_photo_url} target="_blank" rel="noopener noreferrer" className="block">
+                            {completion.receipt_photo_url.match(/\.(jpg|jpeg|png|webp|heic)$/i) ? (
+                              <img
+                                src={completion.receipt_photo_url}
+                                alt="Payment receipt"
+                                className="w-full max-h-48 object-contain rounded-lg border hover:opacity-80 transition bg-gray-50"
+                              />
+                            ) : (
+                              <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border hover:bg-gray-100 transition text-sm text-blue-600">
+                                <Receipt size={16} />
+                                <span>View receipt document</span>
+                              </div>
+                            )}
+                          </a>
+                        </div>
+                      )}
 
                       {/* Photos */}
                       <div>
@@ -582,7 +611,36 @@ export default function ReviewPage() {
                           <p className="text-gray-700 mt-0.5">{completion.remarks}</p>
                         </div>
                       )}
+                      {completion.payment_remarks && (
+                        <div>
+                          <span className="text-xs font-medium text-gray-400 uppercase tracking-wide">Payment Remarks</span>
+                          <p className="text-gray-700 mt-0.5">{completion.payment_remarks}</p>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Payment Receipt */}
+                    {completion.receipt_photo_url && (
+                      <div>
+                        <p className="text-xs font-medium text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5">
+                          <Receipt size={13} /> Payment Receipt
+                        </p>
+                        <a href={completion.receipt_photo_url} target="_blank" rel="noopener noreferrer" className="block">
+                          {completion.receipt_photo_url.match(/\.(jpg|jpeg|png|webp|heic)$/i) ? (
+                            <img
+                              src={completion.receipt_photo_url}
+                              alt="Payment receipt"
+                              className="w-full max-h-48 object-contain rounded-lg border hover:opacity-80 transition bg-gray-50"
+                            />
+                          ) : (
+                            <div className="flex items-center gap-2 px-3 py-2 bg-gray-50 rounded-lg border hover:bg-gray-100 transition text-sm text-blue-600">
+                              <Receipt size={16} />
+                              <span>View receipt document</span>
+                            </div>
+                          )}
+                        </a>
+                      </div>
+                    )}
 
                     {/* Photos */}
                     <div>

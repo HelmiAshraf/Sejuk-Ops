@@ -199,10 +199,10 @@ export default function DashboardPage() {
 
   return (
     <div className="-mx-4 -mb-4 md:-mx-8 md:-mb-8 md:flex md:rounded-none md:border-t md:border-slate-200 md:shadow-sm bg-white relative overflow-hidden"
-         style={{ height: 'calc(100dvh - 56px - 2rem)', minHeight: 0 }}>
+         style={{ height: 'calc(100dvh - 56px - 2rem - env(safe-area-inset-top))', minHeight: 0 }}>
 
       {/* ───────────────── LEFT · Dashboard ───────────────── */}
-      <div className="flex-1 min-w-0 md:border-r border-slate-200 transition-all duration-300 overflow-y-auto">
+      <div className="flex-1 min-w-0 md:border-r border-slate-200 transition-all duration-300 overflow-y-auto pb-[calc(4.5rem+env(safe-area-inset-bottom))] md:pb-0">
 
         {/* Page header */}
         <div className="px-5 md:px-6 pt-5 pb-4 border-b border-slate-100 bg-white sticky top-0 z-10">
@@ -509,7 +509,8 @@ export default function DashboardPage() {
       {mobileAiOpen && (
         <div className="md:hidden fixed inset-0 z-50 flex flex-col bg-white">
           {/* Header */}
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-5 py-4 flex-shrink-0">
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-5 pb-4 flex-shrink-0"
+               style={{ paddingTop: 'calc(env(safe-area-inset-top) + 1rem)' }}>
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-white/20 flex items-center justify-center">
@@ -610,7 +611,8 @@ export default function DashboardPage() {
           )}
 
           {/* Input + char counter */}
-          <div className="border-t border-slate-200 bg-white px-4 py-3 flex-shrink-0">
+          <div className="border-t border-slate-200 bg-white px-4 pt-3 flex-shrink-0"
+               style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.75rem)' }}>
             <div className={`flex items-center gap-2 bg-slate-50 border rounded-xl px-4 py-2.5 focus-within:bg-white focus-within:shadow-sm transition-all ${
               inputError ? 'border-red-300 focus-within:border-red-500' : 'border-slate-200 focus-within:border-blue-500'
             }`}>

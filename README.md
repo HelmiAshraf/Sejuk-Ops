@@ -24,13 +24,27 @@
 
 ## What I Built
 
-**Sejuk Sejuk OPS** digitises the full AC service workflow — from order creation to manager review — across three roles:
+**Sejuk Sejuk OPS** digitises the full AC service workflow — from order creation to manager review.
 
-- **Admin** creates service orders, assigns technicians using an interactive map with AI-powered recommendations, monitors job progress, and closes completed work.
-- **Technicians** view assigned jobs on mobile (PWA), start jobs with one tap (auto-WhatsApps the customer), upload service photos and payment receipts (AI extracts details from images), and submit completion.
-- **Managers** review completed jobs (approve or flag), view a KPI dashboard with technician leaderboard, and query operations data conversationally through an AI assistant.
+### How the system flows:
 
-Every status change is logged in an immutable audit trail. Every AI recommendation is visible and manually overridable.
+**Step 1 — Admin creates an order**
+Customer WhatsApps the admin → Admin copy-pastes the WhatsApp message into the system → System detects the content and auto-fills the form → Order number auto-generates (e.g. `SSB-20260420-0001`)
+
+**Step 2 — Admin assigns a technician**
+Admin clicks "Assign" → A map modal opens showing all technicians with their distance to the customer and current workload → **AI recommends the best technician based on distance and status** with a reason why → Admin accepts or picks someone else
+
+**Step 3 — Technician receives the job (mobile PWA)**
+Technician opens the app on their phone → Sees the job in "My Jobs" → Taps **"Start Job"** → Status changes to In Progress → **Customer automatically receives a WhatsApp message** ("technician is on the way")
+
+**Step 4 — Technician completes the job**
+On site, technician uploads up to 6 service photos → **AI reads the photos** and suggests text for "work done" if it detects handwritten notes or model numbers → Technician uploads a payment receipt photo → **AI extracts payment amount, method, and reference number** into the form → Technician confirms and submits → **Customer automatically gets a WhatsApp feedback request**
+
+**Step 5 — Manager reviews**
+Manager opens the review queue → Sees completed jobs with photos, work details, and payment info → Approves or flags each job
+
+**Step 6 — Manager checks performance**
+Manager opens the KPI dashboard → Sees active jobs, pending reviews, revenue, and a technician leaderboard → Opens the **AI chat** and asks things like *"Which technician completed the most jobs this week?"* or *"What's today's revenue?"* → AI answers using real data from the database, streaming word-by-word
 
 ---
 
@@ -56,49 +70,16 @@ Every status change is logged in an immutable audit trail. Every AI recommendati
 
 ## Architecture Decisions
 
-```
-┌─────────────────────────────────────────────────────┐
-│                   React 19 SPA (Vite PWA)           │
-│  ┌──────────┐  ┌───────────┐  ┌──────────────────┐  │
-│  │  Admin   │  │Technician │  │     Manager      │  │
-│  │  Pages   │  │   Pages   │  │  Dashboard + AI  │  │
-│  └────┬─────┘  └─────┬─────┘  └────────┬─────────┘  │
-│       │              │                  │            │
-│  ┌────▼──────────────▼──────────────────▼─────────┐ │
-│  │          Supabase JS Client (anon key)         │ │
-│  └────────────────────┬───────────────────────────┘ │
-└───────────────────────┼─────────────────────────────┘
-                        │
-        ┌───────────────▼────────────────┐
-        │   Supabase (PostgreSQL + RLS)  │
-        │   Storage Bucket (CDN photos)  │
-        └────────────────────────────────┘
-
-        ┌───────────────────────────────────────────┐
-        │          Vercel Serverless Functions       │
-        │  /api/ai-stream    → Streaming AI queries  │
-        │  /api/ai-assign    → Technician recommend  │
-        │  /api/ai-supervisor→ Job auto-flagging     │
-        │  /api/ai-document  → Photo text extraction │
-        │  /api/ai-receipt   → Receipt OCR           │
-        │  /api/notify-customer → WhatsApp sender   │
-        └───────────────┬───────────────────────────┘
-                        │
-              ┌─────────▼─────────┐
-              │   OpenAI gpt-4o   │
-              │  (+ Vision API)   │
-              └───────────────────┘
-```
-
-**Why Vercel Functions for AI** — OpenAI API keys stay server-side only. Functions run co-located with the frontend, so no separate backend to deploy or maintain.
-
-**Why Supabase anon key on client, service-role key on server** — the client can only do what RLS policies allow. The service-role key (full DB access) only exists in Vercel env vars, used by serverless functions.
-
-**Why a status machine at two layers** — `orders.status` has a `CHECK` constraint at the database level (DB rejects invalid values). The UI's `getNextStatuses()` function independently only renders valid action buttons per role. Defense in depth — even if the UI has a bug, the DB won't allow a bad transition.
-
-**Why function calling instead of RAG** — for a structured domain with known query patterns, OpenAI function calling routes questions directly to purpose-built SQL queries. No vector database, no embedding pipeline — simpler, cheaper, and more predictable than RAG.
-
-**Why Green API for WhatsApp** — free 500 messages/month, works instantly with no Meta Business Account approval process. Sufficient for a real MVP, not just a demo.
+| Decision | Why |
+|----------|-----|
+| **PWA (installable web app)** | Technicians can install it on their phone like a real app — no App Store needed, works offline for viewing jobs |
+| **All AI runs on the server** | API keys never touch the browser. Keeps everything secure, and the frontend stays lightweight |
+| **AI uses function calling, not RAG** | Instead of dumping the whole database into AI, the model picks the right query tool for each question — more accurate, cheaper, and no hallucinated data |
+| **Order status enforced at database level** | Even if someone tries to skip a step, the database itself rejects invalid status changes. The UI also only shows valid actions per role — double protection |
+| **Vercel for everything** | Frontend, serverless functions, and deployment all in one place. No separate backend to manage |
+| **Green API for WhatsApp** | Free 500 messages/month, works instantly. No need for Meta Business Account approval |
+| **Leaflet maps instead of Google Maps** | Free geocoding and maps — same result, zero billing |
+| **Every action logged** | Every status change, assignment, and review is recorded with who did it and when — full audit trail |
 
 ---
 
@@ -217,49 +198,6 @@ Claude was a force multiplier, but every architectural decision and code review 
 | Admin | `admin` |
 | Manager | `manager` |
 | Technician | `ali`, `john`, `bala`, `yusoff` |
-
----
-
-## Local Setup
-
-### Prerequisites
-- Node.js 20+
-- A Supabase project
-- OpenAI API key
-- (Optional) Green API account for WhatsApp
-
-### Steps
-
-```bash
-git clone https://github.com/your-username/sejuk-ops.git
-cd sejuk-ops
-npm install
-```
-
-Create `.env.local`:
-
-```env
-VITE_APP_PASSWORD=your_demo_password
-
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJ...
-
-SUPABASE_URL=https://xxxxx.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=eyJ...
-
-OPENAI_API_KEY=sk-...
-OPENAI_MODEL=gpt-4o
-
-GREEN_API_INSTANCE_ID=your_instance_id
-GREEN_API_TOKEN=your_token
-```
-
-Run Supabase migrations (paste SQL files in order via Supabase SQL editor), then:
-
-```bash
-npm run dev          # Frontend
-vercel dev           # Frontend + Vercel Functions
-```
 
 ---
 

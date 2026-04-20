@@ -6,6 +6,21 @@
 <!-- IMAGE PLACEHOLDER: Replace with dashboard screenshot -->
 <!-- ![Dashboard Overview](docs/screenshots/dashboard.png) -->
 
+### Quick Navigation
+
+| Section | What's inside |
+|---------|--------------|
+| [Modules Completed](#modules-completed) | All modules I implemented |
+| [What I Built](#what-i-built) | Step-by-step flow of the entire system |
+| [Tech Stack](#tech-stack) | Tools and why I chose them |
+| [Architecture Decisions](#architecture-decisions) | Key design choices |
+| [How AI Was Integrated](#how-ai-was-integrated) | 4 AI features — chat, assignment, OCR, WhatsApp |
+| [Challenges](#challenges) | Problems I faced and how I solved them |
+| [AI Limitations](#limitations-of-the-ai-implementation) | What the AI can and can't do |
+| [Production Roadmap](#what-would-i-improve-in-a-real-production-system) | What I'd add next |
+| [Self-Assessment](#self-assessment) | Easiest/hardest module, how I used AI tools |
+| [Live Demo](#live-demo) | Try it yourself |
+
 ---
 
 ## Modules Completed

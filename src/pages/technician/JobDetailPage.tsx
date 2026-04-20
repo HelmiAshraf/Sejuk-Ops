@@ -474,7 +474,7 @@ export default function JobDetailPage() {
                     <img src={receiptUrl} alt="Receipt" className="w-full max-h-48 object-contain rounded-xl border bg-gray-50" />
                   )}
                   <button
-                    onClick={() => { setReceiptUrl(null); setReceiptData(null); }}
+                    onClick={() => { setReceiptUrl(null); }}
                     className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1"
                   >
                     <X size={12} />

@@ -136,6 +136,7 @@ export default function DashboardPage() {
     }
 
     setAiInput(''); setAiLoading(true); setStatusText(''); setInputError('');
+    requestAnimationFrame(() => aiInputRef.current?.focus());
     if (!isAuto) setMessages(prev => [...prev, { role: 'user', content: question }]);
     setMessages(prev => [...prev, { role: 'ai', content: '', streaming: true }]);
     const history = isAuto ? [] : buildHistory();

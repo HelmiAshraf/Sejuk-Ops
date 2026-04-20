@@ -204,7 +204,6 @@ Claude was a force multiplier, but every architectural decision and code review 
 | Environment | URL |
 |-------------|-----|
 | Production | https://sejuk-ops.vercel.app |
-| Password | Utopia|
 
 **Demo credentials (no signup needed):**
 

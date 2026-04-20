@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppGate } from './components/AppGate';
 import { AppShell } from './components/layout/AppShell';
+import { InstallPrompt } from './components/InstallPrompt';
 import LoginPage from './pages/LoginPage';
 import OrdersPage from './pages/admin/OrdersPage';
 import NewOrderPage from './pages/admin/NewOrderPage';
@@ -24,6 +25,8 @@ function AppRoutes() {
   const { user } = useAuth();
 
   return (
+    <>
+    {user?.role === 'technician' && <InstallPrompt />}
     <Routes>
       <Route path="/login" element={<LoginPage />} />
 
@@ -63,6 +66,7 @@ function AppRoutes() {
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    </>
   );
 }
 

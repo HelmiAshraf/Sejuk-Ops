@@ -182,7 +182,7 @@ export default function ReviewPage() {
             {t.icon}
             {t.label}
             {t.count !== undefined && t.count > 0 && (
-              <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+              <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold font-mono ${
                 tab === t.id ? 'bg-red-100 text-red-700' : 'bg-red-100 text-red-600'
               }`}>
                 {t.count}
@@ -236,7 +236,7 @@ export default function ReviewPage() {
                       </div>
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
                         <StatusBadge status={order.status} />
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs font-mono text-gray-400">
                           {new Date(order.updated_at).toLocaleDateString('en-MY', { day: 'numeric', month: 'short' })}
                         </span>
                       </div>
@@ -316,7 +316,7 @@ export default function ReviewPage() {
                         ) : (
                           <>
                             <p><span className="text-gray-500">Name:</span> <span className="font-medium">{selected.customer_name}</span></p>
-                            <p><span className="text-gray-500">Phone:</span> {selected.customer_phone || '—'}</p>
+                            <p><span className="text-gray-500">Phone:</span> <span className="font-mono">{selected.customer_phone || '—'}</span></p>
                             <p><span className="text-gray-500">Address:</span> {selected.customer_address}</p>
                           </>
                         )}
@@ -331,21 +331,21 @@ export default function ReviewPage() {
                         <div className="grid grid-cols-2 gap-2 pt-1">
                           <div className="bg-gray-50 rounded-lg px-3 py-2">
                             <span className="text-xs text-gray-400">Quoted</span>
-                            <p className="font-semibold text-gray-800">RM {selected.quoted_price.toFixed(2)}</p>
+                            <p className="font-semibold font-mono text-gray-800">RM {selected.quoted_price.toFixed(2)}</p>
                           </div>
                           <div className="bg-gray-50 rounded-lg px-3 py-2">
                             <span className="text-xs text-gray-400">Extra Charges</span>
-                            <p className="font-semibold text-gray-800">RM {completion.extra_charges.toFixed(2)}</p>
+                            <p className="font-semibold font-mono text-gray-800">RM {completion.extra_charges.toFixed(2)}</p>
                           </div>
                         </div>
                         <div className="flex justify-between bg-green-50 rounded-lg px-3 py-2">
                           <span className="font-medium text-gray-700">Final Amount</span>
-                          <span className="font-bold text-green-700">RM {completion.final_amount.toFixed(2)}</span>
+                          <span className="font-bold font-mono text-green-700">RM {completion.final_amount.toFixed(2)}</span>
                         </div>
                         {completion.payment_amount != null && (
                           <div className="flex justify-between text-xs text-gray-500 px-1">
                             <span>Payment received</span>
-                            <span>RM {completion.payment_amount.toFixed(2)} · {completion.payment_method}</span>
+                            <span className="font-mono">RM {completion.payment_amount.toFixed(2)} · {completion.payment_method}</span>
                           </div>
                         )}
                         {completion.remarks && (
@@ -434,7 +434,7 @@ export default function ReviewPage() {
                           {review.review_notes && (
                             <p className="text-sm text-gray-600 mt-1">{review.review_notes}</p>
                           )}
-                          <p className="text-xs text-gray-400 mt-1">
+                          <p className="text-xs font-mono text-gray-400 mt-1">
                             {new Date(review.reviewed_at).toLocaleString('en-MY', {
                               day: 'numeric', month: 'short', year: 'numeric',
                               hour: '2-digit', minute: '2-digit',

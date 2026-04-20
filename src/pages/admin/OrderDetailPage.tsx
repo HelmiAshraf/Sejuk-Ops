@@ -145,7 +145,7 @@ export default function OrderDetailPage() {
               <h1 className="text-xl font-bold text-gray-900 font-mono">{order.order_no}</h1>
               <StatusBadge status={order.status} />
             </div>
-            <p className="text-sm text-gray-500">Created {new Date(order.created_at).toLocaleString()}</p>
+            <p className="text-sm text-gray-500">Created <span className="font-mono">{new Date(order.created_at).toLocaleString()}</span></p>
           </div>
         </div>
         <div className="flex gap-2">
@@ -213,7 +213,7 @@ export default function OrderDetailPage() {
             ) : (
               <>
                 <p><span className="text-gray-500">Name:</span> <span className="font-medium">{order.customer_name}</span></p>
-                <p><span className="text-gray-500">Phone:</span> {order.customer_phone || '—'}</p>
+                <p><span className="text-gray-500">Phone:</span> <span className="font-mono">{order.customer_phone || '—'}</span></p>
                 <p><span className="text-gray-500">Address:</span> {order.customer_address}</p>
               </>
             )}
@@ -286,7 +286,7 @@ export default function OrderDetailPage() {
             ) : (
               <>
                 <p><span className="text-gray-500">Type:</span> <span className="font-medium">{order.service_type}</span></p>
-                <p><span className="text-gray-500">Quoted:</span> <span className="font-medium text-green-700">RM {order.quoted_price.toFixed(2)}</span></p>
+                <p><span className="text-gray-500">Quoted:</span> <span className="font-medium font-mono text-green-700">RM {order.quoted_price.toFixed(2)}</span></p>
                 <p><span className="text-gray-500">Technician:</span> {order.technician?.name ?? <span className="text-gray-400">Not assigned</span>}</p>
                 {order.problem_description && <p><span className="text-gray-500">Problem:</span> {order.problem_description}</p>}
                 {order.admin_notes && <p><span className="text-gray-500">Notes:</span> {order.admin_notes}</p>}
@@ -302,10 +302,10 @@ export default function OrderDetailPage() {
           <CardHeader><p className="font-medium text-gray-800 flex items-center gap-2"><FileText size={16} /> Job Completion</p></CardHeader>
           <CardBody className="space-y-2 text-sm">
             <p><span className="text-gray-500">Work Done:</span> {completion.work_done}</p>
-            <p><span className="text-gray-500">Extra Charges:</span> RM {completion.extra_charges.toFixed(2)}</p>
-            <p><span className="text-gray-500">Final Amount:</span> <span className="font-bold text-green-700">RM {completion.final_amount.toFixed(2)}</span></p>
+            <p><span className="text-gray-500">Extra Charges:</span> <span className="font-mono">RM {completion.extra_charges.toFixed(2)}</span></p>
+            <p><span className="text-gray-500">Final Amount:</span> <span className="font-bold font-mono text-green-700">RM {completion.final_amount.toFixed(2)}</span></p>
             {completion.remarks && <p><span className="text-gray-500">Remarks:</span> {completion.remarks}</p>}
-            <p><span className="text-gray-500">Completed:</span> {new Date(completion.completed_at).toLocaleString()}</p>
+            <p><span className="text-gray-500">Completed:</span> <span className="font-mono">{new Date(completion.completed_at).toLocaleString()}</span></p>
           </CardBody>
         </Card>
       )}
@@ -313,7 +313,7 @@ export default function OrderDetailPage() {
       {/* Photos */}
       {photos.length > 0 && (
         <Card>
-          <CardHeader><p className="font-medium text-gray-800 flex items-center gap-2"><Camera size={16} /> Photos ({photos.length})</p></CardHeader>
+          <CardHeader><p className="font-medium text-gray-800 flex items-center gap-2"><Camera size={16} /> Photos (<span className="font-mono">{photos.length}</span>)</p></CardHeader>
           <CardBody>
             <div className="grid grid-cols-3 gap-3">
               {photos.map((p) => (
@@ -341,7 +341,7 @@ export default function OrderDetailPage() {
                   {log.from_status && (
                     <p className="text-xs text-gray-500">{log.from_status} → {log.to_status}</p>
                   )}
-                  <p className="text-xs text-gray-400">{log.actor_name} · {new Date(log.created_at).toLocaleString()}</p>
+                  <p className="text-xs text-gray-400">{log.actor_name} · <span className="font-mono">{new Date(log.created_at).toLocaleString()}</span></p>
                 </li>
               ))}
             </ol>

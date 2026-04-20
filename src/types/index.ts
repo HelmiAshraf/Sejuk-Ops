@@ -41,6 +41,7 @@ export interface Order {
   assigned_technician_id: string | null;
   status: OrderStatus;
   admin_notes: string;
+  preferred_date: string | null;
   created_by: string;
   created_at: string;
   updated_at: string;
@@ -120,6 +121,7 @@ export interface CreateOrderInput {
   quoted_price: number;
   assigned_technician_id: string | null;
   admin_notes: string;
+  preferred_date: string | null;
   created_by: string;
 }
 
@@ -132,6 +134,7 @@ export interface CreateCompletionInput {
   remarks: string;
   payment_amount: number | null;
   payment_method: PaymentMethod | null;
+  receipt_photo_url: string | null;
 }
 
 export interface OrderFilters {

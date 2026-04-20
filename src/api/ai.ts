@@ -116,6 +116,21 @@ export async function notifyCustomer(payload: {
   // fire-and-forget — don't throw, notification is non-blocking
 }
 
+// ── Receipt / Payment Proof OCR ───────────────────────────────────────────────
+export async function extractReceiptData(fileUrl: string, fileType?: string): Promise<string> {
+  if (!AI_DOCUMENT_EXTRACT_ENABLED) return '';
+
+  const res = await fetch('/api/ai-receipt', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fileUrl, fileType }),
+  });
+
+  if (!res.ok) throw new Error('Receipt extraction failed');
+  const data = await res.json();
+  return data.text ?? '';
+}
+
 // ── Document Understanding ────────────────────────────────────────────────────
 export async function extractDocumentData(
   fileUrl: string,

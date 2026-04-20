@@ -30,6 +30,7 @@ function parseWhatsAppText(text: string): Partial<{
   customer_address: string;
   service_type: string;
   problem_description: string;
+  preferred_date: string;
 }> {
   const result: ReturnType<typeof parseWhatsAppText> = {};
   const lines = text.split('\n');
@@ -53,12 +54,28 @@ function parseWhatsAppText(text: string): Partial<{
     } else if (['service', 'service type', 'jenis servis', 'servis'].includes(key)) {
       const match = SERVICE_TYPES.find(
         (s) => s.toLowerCase() === value.toLowerCase() ||
-               value.toLowerCase().includes(s.toLowerCase()) ||
-               s.toLowerCase().includes(value.toLowerCase())
+          value.toLowerCase().includes(s.toLowerCase()) ||
+          s.toLowerCase().includes(value.toLowerCase())
       );
       if (match) result.service_type = match;
     } else if (['problem', 'problem description', 'issue', 'masalah', 'description'].includes(key)) {
       result.problem_description = value;
+    } else if (['preferred date', 'date', 'tarikh', 'preferred', 'preferred date'].includes(key)) {
+      // Normalise common date formats to YYYY-MM-DD
+      const cleaned = value.replace(/\s+/g, '');
+      // Try d-m-yyyy or d/m/yyyy
+      const dmyMatch = cleaned.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+      if (dmyMatch) {
+        const [, d, m, y] = dmyMatch;
+        result.preferred_date = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+      } else {
+        // Try yyyy-mm-dd passthrough
+        const isoMatch = cleaned.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+        if (isoMatch) {
+          const [, y, m, d] = isoMatch;
+          result.preferred_date = `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+        }
+      }
     }
   }
 
@@ -89,6 +106,7 @@ export default function NewOrderPage() {
     quoted_price: '',
     assigned_technician_id: '',
     admin_notes: '',
+    preferred_date: '',
   });
 
   useEffect(() => {
@@ -103,6 +121,7 @@ export default function NewOrderPage() {
     if (parsed.customer_address) filled.push('Address');
     if (parsed.service_type) filled.push('Service');
     if (parsed.problem_description) filled.push('Problem');
+    if (parsed.preferred_date) filled.push('Preferred Date');
     setForm(f => ({ ...f, ...parsed }));
     setParsedFields(filled);
   };
@@ -135,6 +154,7 @@ export default function NewOrderPage() {
         ...form,
         quoted_price: Number(form.quoted_price),
         assigned_technician_id: null,   // handled separately below
+        preferred_date: form.preferred_date || null,
         created_by: user?.name ?? 'admin',
       });
 
@@ -147,6 +167,11 @@ export default function NewOrderPage() {
       setCreatedOrderNo(order.order_no);
       setCreatedOrderId(order.id);
       setSubmitted(true);
+    } catch (err: unknown) {
+      const msg = err instanceof Error
+        ? err.message
+        : (err as any)?.message ?? JSON.stringify(err);
+      setErrors({ submit: msg });
     } finally {
       setLoading(false);
     }
@@ -312,6 +337,10 @@ export default function NewOrderPage() {
               <textarea {...field('problem_description')} rows={3} className={inputClass('problem_description')} placeholder="Describe the issue..." />
             </div>
             <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Date</label>
+              <input type="date" {...field('preferred_date')} className={inputClass('preferred_date')} />
+            </div>
+            <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Quoted Price (RM) *</label>
               <input type="number" min="0" step="0.01" {...field('quoted_price')} className={inputClass('quoted_price')} placeholder="150.00" />
               {errors.quoted_price && <p className="text-xs text-red-500 mt-1">{errors.quoted_price}</p>}
@@ -345,7 +374,6 @@ export default function NewOrderPage() {
                   </button>
                 )}
               </div>
-              <p className="text-xs text-gray-400 mt-1">Optional — can be assigned later</p>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Admin Notes</label>
@@ -354,6 +382,9 @@ export default function NewOrderPage() {
           </CardBody>
         </Card>
 
+        {errors.submit && (
+          <p className="text-sm text-red-600 bg-red-50 border border-red-200 rounded-lg px-4 py-2">{errors.submit}</p>
+        )}
         <div className="flex gap-3 justify-end">
           <Button variant="secondary" type="button" onClick={() => navigate('/admin/orders')}>Cancel</Button>
           <Button type="submit" loading={loading}>Create Order</Button>

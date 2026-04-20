@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase';
 import { LoadingSpinner } from '../../components/ui/LoadingSpinner';
 import ReactMarkdown from 'react-markdown';
 import type { Order, OrderStatus } from '../../types';
-import { ArrowRight, Bot, ChevronLeft, ChevronRight, RotateCcw, Send, Sparkles, X } from 'lucide-react';
+import { ArrowRight, Bot, ChevronLeft, ChevronRight, RotateCcw, Send, Sparkles, X, Wrench, Clock, CheckCircle2, DollarSign, Trophy, Zap } from 'lucide-react';
 
 interface TechStat { name: string; completed: number; inProgress: number; }
 interface AIMessage { role: 'user' | 'ai'; content: string; streaming?: boolean; }
@@ -137,109 +137,141 @@ export default function DashboardPage() {
   const dateStr = now.toLocaleDateString('en-MY', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 
-  const h = 'calc(100dvh - 56px - 64px)';
-
   return (
-    <div className="md:flex md:rounded-xl md:overflow-hidden md:border md:border-slate-200 md:shadow-sm bg-white relative" style={{ height: h }}>
+    <div className="-mx-4 md:-mx-8 md:flex md:rounded-none md:border-y md:border-slate-200 md:shadow-sm bg-white relative">
 
       {/* ───────────────── LEFT · Dashboard ───────────────── */}
-      <div className="flex-1 min-w-0 overflow-y-auto md:border-r border-slate-200 transition-all duration-300">
+      <div className="flex-1 min-w-0 md:border-r border-slate-200 transition-all duration-300">
 
         {/* Page header */}
-        <div className="px-4 md:px-6 pt-4 md:pt-6 pb-3 md:pb-4 border-b border-slate-100">
-          <p className="text-xs text-slate-400">{dateStr}</p>
-          <div className="flex items-center justify-between mt-1">
-            <h1 className="text-base md:text-lg font-semibold text-slate-900">{greeting} 👋</h1>
+        <div className="px-5 md:px-6 pt-5 pb-4 border-b border-slate-100 bg-white">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[11px] text-slate-400 font-medium">{dateStr}</p>
+              <h1 className="text-lg font-bold text-slate-900 mt-0.5">{greeting}</h1>
+            </div>
             {pendingReview > 0 && (
-              <span className="inline-flex items-center gap-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-full px-2.5 py-1">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-                {pendingReview} pending
-              </span>
+              <div className="flex items-center gap-1.5 bg-amber-50 border border-amber-200 rounded-xl px-3 py-2">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
+                <span className="text-xs font-semibold text-amber-700">{pendingReview} to review</span>
+              </div>
             )}
           </div>
         </div>
 
-        <div className="p-4 md:p-6 space-y-5 md:space-y-6">
+        <div className="p-4 md:p-5 space-y-4">
 
           {/* KPI row */}
-          <div className="grid grid-cols-2 xl:grid-cols-4 gap-2 md:gap-3">
-            {[
-              { label: 'Active Jobs',   value: inProgress,    sub: 'in progress',       color: 'text-blue-600',    dot: 'bg-blue-500' },
-              { label: 'Needs Review',  value: pendingReview, sub: pendingReview > 0 ? 'action required' : 'all clear', color: pendingReview > 0 ? 'text-amber-600' : 'text-slate-400', dot: pendingReview > 0 ? 'bg-amber-500' : 'bg-slate-300' },
-              { label: 'Completed',     value: completed,     sub: 'reviewed & closed',  color: 'text-emerald-600', dot: 'bg-emerald-500' },
-              { label: 'Revenue',       value: totalRevenue > 0 ? `RM ${totalRevenue.toLocaleString('en-MY', { minimumFractionDigits: 0 })}` : '—', sub: 'from completions', color: 'text-violet-600', dot: 'bg-violet-500' },
-            ].map(card => (
-              <div key={card.label} className="rounded-xl border border-slate-200 bg-white p-3 md:p-4 hover:border-slate-300 transition-colors">
-                <div className="flex items-center gap-1.5 mb-2 md:mb-3">
-                  <span className={`h-2 w-2 rounded-full flex-shrink-0 ${card.dot}`} />
-                  <span className="text-[10px] md:text-[11px] font-semibold uppercase tracking-widest text-slate-400 truncate">{card.label}</span>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Active Jobs */}
+            <div className="rounded-2xl bg-blue-600 p-4 text-white shadow-sm shadow-blue-200">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-blue-200">Active Jobs</span>
+                <div className="w-7 h-7 rounded-lg bg-white/20 flex items-center justify-center">
+                  <Wrench size={13} className="text-white" />
                 </div>
-                <p className={`text-xl md:text-2xl font-bold tracking-tight ${card.color}`}>{card.value}</p>
-                <p className="mt-0.5 text-[11px] md:text-xs text-slate-400 truncate">{card.sub}</p>
               </div>
-            ))}
+              <p className="text-3xl font-bold font-mono leading-none">{inProgress}</p>
+              <p className="text-[11px] text-blue-200 mt-1.5">in progress now</p>
+            </div>
+
+            {/* Needs Review */}
+            <div className={`rounded-2xl p-4 shadow-sm ${pendingReview > 0 ? 'bg-amber-500 text-white shadow-amber-200' : 'bg-slate-100 text-slate-500'}`}>
+              <div className="flex items-center justify-between mb-3">
+                <span className={`text-[11px] font-semibold uppercase tracking-widest ${pendingReview > 0 ? 'text-amber-100' : 'text-slate-400'}`}>Needs Review</span>
+                <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${pendingReview > 0 ? 'bg-white/20' : 'bg-slate-200'}`}>
+                  <Clock size={13} className={pendingReview > 0 ? 'text-white' : 'text-slate-400'} />
+                </div>
+              </div>
+              <p className={`text-3xl font-bold font-mono leading-none ${pendingReview > 0 ? 'text-white' : 'text-slate-400'}`}>{pendingReview}</p>
+              <p className={`text-[11px] mt-1.5 ${pendingReview > 0 ? 'text-amber-100' : 'text-slate-400'}`}>{pendingReview > 0 ? 'action required' : 'all clear'}</p>
+            </div>
+
+            {/* Completed */}
+            <div className="rounded-2xl bg-white border border-slate-200 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Completed</span>
+                <div className="w-7 h-7 rounded-lg bg-emerald-50 flex items-center justify-center">
+                  <CheckCircle2 size={13} className="text-emerald-600" />
+                </div>
+              </div>
+              <p className="text-3xl font-bold font-mono leading-none text-emerald-600">{completed}</p>
+              <p className="text-[11px] text-slate-400 mt-1.5">reviewed & closed</p>
+            </div>
+
+            {/* Revenue */}
+            <div className="rounded-2xl bg-white border border-slate-200 p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-slate-400">Revenue</span>
+                <div className="w-7 h-7 rounded-lg bg-violet-50 flex items-center justify-center">
+                  <DollarSign size={13} className="text-violet-600" />
+                </div>
+              </div>
+              <p className="text-xl font-bold font-mono leading-none text-violet-600 truncate">
+                {totalRevenue > 0 ? `RM ${totalRevenue.toLocaleString('en-MY')}` : 'RM 0'}
+              </p>
+              <p className="text-[11px] text-slate-400 mt-1.5">from completions</p>
+            </div>
           </div>
 
-          {/* Pipeline — horizontal scroll on mobile, grid on desktop */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-sm font-semibold text-slate-700">Pipeline</h2>
-              <span className="text-xs text-slate-400">{orders.length} total</span>
+          {/* Pipeline */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-sm font-semibold text-slate-800">Pipeline</h2>
+              <span className="text-xs text-slate-400 font-mono bg-slate-50 border border-slate-200 rounded-full px-2.5 py-0.5">{orders.length} jobs</span>
             </div>
-            {/* Mobile: scrollable row */}
-            <div className="flex gap-2 overflow-x-auto no-scrollbar md:hidden pb-1">
-              {pipelineCounts.map((s) => (
-                <div key={s.status} className="flex-shrink-0 w-24">
-                  <div className={`rounded-xl ${s.bg} border border-slate-200 px-3 py-3 text-center`}>
-                    <p className={`text-[11px] font-semibold ${s.text}`}>{s.label}</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1">{s.count}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            {/* Desktop: grid */}
-            <div className="hidden md:grid grid-cols-5 gap-2">
+            <div className="flex items-center gap-1">
               {pipelineCounts.map((s, i) => (
-                <div key={s.status} className="relative">
-                  <div className={`rounded-xl ${s.bg} border border-slate-200 p-3 text-center`}>
-                    <p className={`text-xs font-semibold ${s.text} truncate`}>{s.label}</p>
-                    <p className="text-2xl font-bold text-slate-900 mt-1.5">{s.count}</p>
+                <div key={s.status} className="flex items-center flex-1 min-w-0">
+                  <div className={`flex-1 rounded-xl ${s.bg} border border-slate-200 px-2 py-2.5 text-center min-w-0`}>
+                    <p className={`text-[10px] font-semibold ${s.text} truncate leading-tight mb-1`}>{s.label}</p>
+                    <p className="text-xl font-bold font-mono text-slate-900">{s.count}</p>
                   </div>
                   {i < pipelineCounts.length - 1 && (
-                    <ArrowRight size={10} className="absolute -right-1.5 top-1/2 -translate-y-1/2 text-slate-300 z-10" />
+                    <ArrowRight size={10} className="text-slate-300 flex-shrink-0 mx-0.5" />
                   )}
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Leaderboard */}
-          <div>
-            <div className="mb-3">
-              <h2 className="text-sm font-semibold text-slate-700">Technician Performance</h2>
+          {/* Technician Leaderboard */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-4">
+            <div className="flex items-center gap-2 mb-4">
+              <Trophy size={14} className="text-amber-500" />
+              <h2 className="text-sm font-semibold text-slate-800">Technician Performance</h2>
             </div>
             {techStats.length === 0 ? (
-              <p className="text-sm text-slate-400 py-4 text-center">No data yet</p>
+              <p className="text-sm text-slate-400 py-6 text-center">No data yet</p>
             ) : (
               <div className="space-y-2">
                 {techStats.map((t, i) => {
                   const medals = ['🥇', '🥈', '🥉'];
                   const pct = Math.round((t.completed / maxCompleted) * 100);
+                  const barColors = ['bg-blue-500', 'bg-slate-400', 'bg-slate-300'];
                   return (
-                    <div key={t.name} className="flex items-center gap-3 py-2 md:py-2.5 px-3 md:px-4 rounded-xl border border-slate-100 bg-slate-50 hover:border-slate-200 transition-colors">
-                      <span className="text-sm w-5 flex-shrink-0">{medals[i] ?? <span className="text-xs text-slate-400">#{i+1}</span>}</span>
+                    <div key={t.name} className="flex items-center gap-3 p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                      <span className="text-base w-6 flex-shrink-0 text-center">
+                        {medals[i] ?? <span className="text-xs font-bold text-slate-300">#{i+1}</span>}
+                      </span>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between mb-1.5">
-                          <span className="text-sm font-medium text-slate-800 truncate">{t.name}</span>
-                          <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                          <span className="text-sm font-semibold text-slate-800 truncate">{t.name}</span>
+                          <div className="flex items-center gap-1.5 flex-shrink-0 ml-2">
                             {t.inProgress > 0 && (
-                              <span className="text-[10px] font-semibold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">{t.inProgress} active</span>
+                              <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-600 border border-amber-200 px-1.5 py-0.5 rounded-full">
+                                <Zap size={9} />
+                                {t.inProgress}
+                              </span>
                             )}
-                            <span className="text-xs font-bold text-slate-500 w-4 text-right">{t.completed}</span>
+                            <span className="text-sm font-bold font-mono text-slate-700">{t.completed}</span>
                           </div>
                         </div>
-                        <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                          <div className="h-full bg-blue-500 rounded-full transition-all duration-700" style={{ width: `${pct}%` }} />
+                        <div className="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                          <div
+                            className={`h-full rounded-full transition-all duration-700 ${barColors[i] ?? 'bg-slate-200'}`}
+                            style={{ width: `${pct}%` }}
+                          />
                         </div>
                       </div>
                     </div>
@@ -248,6 +280,7 @@ export default function DashboardPage() {
               </div>
             )}
           </div>
+
         </div>
       </div>
 
@@ -255,16 +288,15 @@ export default function DashboardPage() {
       <button
         onClick={() => setAiOpen(o => !o)}
         title={aiOpen ? 'Slim chat (25%)' : 'Expand chat (45%)'}
-        className="hidden md:flex absolute top-1/2 -translate-y-1/2 z-20 items-center justify-center w-5 h-12 rounded-l-lg bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-all duration-300"
-        style={{ right: aiOpen ? '45%' : '25%' }}
+        className="hidden md:flex sticky top-1/2 z-20 items-center justify-center w-5 h-12 rounded-l-lg bg-blue-600 text-white shadow-md hover:bg-blue-700 transition-all duration-300 self-start mt-[40vh] -mr-0 flex-shrink-0"
       >
         {aiOpen ? <ChevronRight size={13} /> : <ChevronLeft size={13} />}
       </button>
 
       {/* ───────────────── RIGHT · AI Panel — desktop only ───────────────── */}
       <div
-        className="hidden md:flex flex-col bg-white overflow-hidden transition-all duration-300"
-        style={{ width: aiOpen ? '45%' : '25%' }}
+        className="hidden md:flex flex-col bg-white overflow-hidden transition-all duration-300 self-stretch"
+        style={{ width: aiOpen ? '45%' : '25%', minHeight: 'calc(100dvh - 56px)' }}
       >
         {/* Gradient header */}
         <div className="bg-gradient-to-br from-blue-600 to-indigo-700 px-5 py-4 flex-shrink-0">

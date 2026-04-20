@@ -45,6 +45,20 @@ export async function getPhotosByOrderId(orderId: string): Promise<JobPhoto[]> {
   return data ?? [];
 }
 
+export async function uploadReceiptPhoto(orderId: string, file: File): Promise<string> {
+  const timestamp = Date.now();
+  const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const path = `${orderId}/receipt/${timestamp}_${safeName}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from(BUCKET)
+    .upload(path, file, { upsert: true });
+  if (uploadError) throw uploadError;
+
+  const { data: urlData } = supabase.storage.from(BUCKET).getPublicUrl(path);
+  return urlData.publicUrl;
+}
+
 export async function deleteJobPhoto(photoId: string, storagePath: string): Promise<void> {
   await supabase.storage.from(BUCKET).remove([storagePath]);
   await supabase.from('job_photos').delete().eq('id', photoId);

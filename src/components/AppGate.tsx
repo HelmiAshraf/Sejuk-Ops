@@ -17,6 +17,7 @@ export function AppGate({ children }: { children: ReactNode }) {
     e.preventDefault();
     if (input === PASSWORD) {
       sessionStorage.setItem(SESSION_KEY, 'true');
+      localStorage.removeItem('sejuk_ops_user');
       setUnlocked(true);
     } else {
       setError(true);

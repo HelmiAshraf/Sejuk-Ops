@@ -107,7 +107,7 @@ export default function OrdersPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Service Orders</h1>
-          <p className="text-sm text-gray-500 mt-1">{orders.length} total orders</p>
+          <p className="text-sm text-gray-500 mt-1"><span className="font-mono">{orders.length}</span> total orders</p>
         </div>
         <Button onClick={() => navigate('/admin/orders/new')}>
           <Plus size={16} />
@@ -127,7 +127,7 @@ export default function OrdersPage() {
         >
           New
           {newCount > 0 && (
-            <span className="ml-2 inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-700">
+            <span className="ml-2 inline-flex items-center justify-center px-1.5 py-0.5 rounded-full text-xs font-semibold font-mono bg-blue-100 text-blue-700">
               {newCount}
             </span>
           )}
@@ -219,14 +219,14 @@ export default function OrdersPage() {
                     <td className="px-4 py-3 font-mono text-xs text-blue-600 font-medium">{order.order_no}</td>
                     <td className="px-4 py-3">
                       <p className="font-medium text-gray-900">{order.customer_name}</p>
-                      <p className="text-xs text-gray-400">{order.customer_phone}</p>
+                      <p className="text-xs font-mono text-gray-400">{order.customer_phone}</p>
                     </td>
                     <td className="px-4 py-3 text-gray-600">{order.service_type}</td>
                     <td className="px-4 py-3 text-gray-600">
                       {order.technician?.name ?? <span className="text-gray-300">—</span>}
                     </td>
                     <td className="px-4 py-3"><StatusBadge status={order.status} /></td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">{formatDate(order.created_at)}</td>
+                    <td className="px-4 py-3 text-gray-400 text-xs font-mono">{formatDate(order.created_at)}</td>
                     <td className="px-4 py-3">
                       <Link
                         to={`/admin/orders/${order.id}`}

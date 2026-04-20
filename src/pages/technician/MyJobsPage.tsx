@@ -46,7 +46,7 @@ export default function MyJobsPage() {
               tab === t ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'
             }`}
           >
-            {t === 'active' ? `Active (${active.length})` : `Completed (${done.length})`}
+            {t === 'active' ? <>Active (<span className="font-mono">{active.length}</span>)</> : <>Completed (<span className="font-mono">{done.length}</span>)</>}
           </button>
         ))}
       </div>

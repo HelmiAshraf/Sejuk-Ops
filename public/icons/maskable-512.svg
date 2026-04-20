@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <!-- Full bleed background for maskable icon (safe zone is center 80%) -->
+  <rect width="512" height="512" fill="#2563EB"/>
+  <g transform="translate(256,256)" stroke="white" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <line x1="0" y1="-110" x2="0" y2="110" stroke-width="24"/>
+    <line x1="-110" y1="0" x2="110" y2="0" stroke-width="24"/>
+    <line x1="-76" y1="-76" x2="76" y2="76" stroke-width="24"/>
+    <line x1="76" y1="-76" x2="-76" y2="76" stroke-width="24"/>
+    <line x1="0" y1="-110" x2="-30" y2="-80" stroke-width="20"/>
+    <line x1="0" y1="-110" x2="30" y2="-80" stroke-width="20"/>
+    <line x1="0" y1="110" x2="-30" y2="80" stroke-width="20"/>
+    <line x1="0" y1="110" x2="30" y2="80" stroke-width="20"/>
+    <line x1="-110" y1="0" x2="-80" y2="-30" stroke-width="20"/>
+    <line x1="-110" y1="0" x2="-80" y2="30" stroke-width="20"/>
+    <line x1="110" y1="0" x2="80" y2="-30" stroke-width="20"/>
+    <line x1="110" y1="0" x2="80" y2="30" stroke-width="20"/>
+    <circle cx="0" cy="0" r="22" fill="white" stroke="none"/>
+  </g>
+</svg>

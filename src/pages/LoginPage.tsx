@@ -15,7 +15,7 @@ export default function LoginPage() {
     login(selected);
     if (selected.role === 'admin') navigate('/admin/orders');
     else if (selected.role === 'technician') navigate('/technician/jobs');
-    else navigate('/manager/review');
+    else navigate('/manager/dashboard');
   };
 
   return (
@@ -48,8 +48,7 @@ export default function LoginPage() {
           </div>
 
           <div className="bg-gray-50 rounded-lg px-4 py-3 text-xs text-gray-500">
-            <span className="font-medium capitalize text-gray-700">{selected.role}</span>
-            {' — '}
+            <span className="font-medium capitalize text-gray-700 block mb-0.5">{selected.role}</span>
             {selected.role === 'admin' && 'Create & assign service orders'}
             {selected.role === 'technician' && 'View and complete field jobs'}
             {selected.role === 'manager' && 'Review jobs & query AI assistant'}
@@ -59,10 +58,6 @@ export default function LoginPage() {
             Continue
           </Button>
         </div>
-
-        <p className="text-center text-xs text-gray-400 mt-6">
-          Mock login — no password required
-        </p>
       </div>
     </div>
   );

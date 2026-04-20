@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import OpenAI from 'openai';
 import { createClient } from '@supabase/supabase-js';
-import { AI_MODEL } from './_config';
+import { AI_MODEL } from './_config.js';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 const supabase = createClient(

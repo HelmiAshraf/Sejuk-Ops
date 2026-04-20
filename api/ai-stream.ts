@@ -16,7 +16,7 @@ import { createClient } from '@supabase/supabase-js';
 import {
   AI_MODEL, AI_MAX_TOKENS, AI_TEMPERATURE,
   AI_INPUT_MAX_CHARS, AI_INPUT_BLOCKED_TERMS, AI_MEMORY_WINDOW,
-} from './_config';
+} from './_config.js';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY! });
 const supabase = createClient(

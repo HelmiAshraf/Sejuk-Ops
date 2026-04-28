@@ -92,8 +92,16 @@ const DB_TOOLS: OpenAI.Chat.Completions.ChatCompletionTool[] = [
   {
     type: 'function',
     function: {
+      name: 'query_jobs_pending_review',
+      description: 'Count and list orders in "Job Done" status that are awaiting manager review',
+      parameters: { type: 'object', properties: {}, required: [] },
+    },
+  },
+  {
+    type: 'function',
+    function: {
       name: 'query_jobs_no_photos',
-      description: 'Find completed jobs that have no photos uploaded',
+      description: 'Find "Job Done" orders that are missing photos — used to check photo compliance before review, NOT to count how many jobs need review',
       parameters: { type: 'object', properties: {}, required: [] },
     },
   },
@@ -169,13 +177,20 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
         .gte('completed_at', periodStart(args.period as string));
       return { count: count ?? 0, period: args.period };
     }
+    case 'query_jobs_pending_review': {
+      const { data, count } = await supabase
+        .from('orders')
+        .select('order_no, customer_name, technician:technicians(name)', { count: 'exact' })
+        .eq('status', 'Job Done');
+      return { count: count ?? 0, jobs: data ?? [] };
+    }
     case 'query_jobs_no_photos': {
       const { data: photoIds } = await supabase.from('job_photos').select('order_id');
       const ids = (photoIds ?? []).map(r => r.order_id).filter(Boolean);
       let q = supabase
         .from('orders')
         .select('order_no, customer_name, technician:technicians(name)')
-        .in('status', ['Job Done', 'Reviewed']);
+        .eq('status', 'Job Done');
       if (ids.length > 0) q = q.not('id', 'in', `(${ids.join(',')})`);
       const { data } = await q;
       return data ?? [];

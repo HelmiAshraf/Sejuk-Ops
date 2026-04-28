@@ -39,6 +39,7 @@ const PIPELINE: { status: OrderStatus; label: string; bg: string; text: string }
   { status: 'In Progress', label: 'In Progress',  bg: 'bg-amber-50',    text: 'text-amber-600' },
   { status: 'Job Done',    label: 'Job Done',     bg: 'bg-emerald-50',  text: 'text-emerald-600' },
   { status: 'Reviewed',    label: 'Reviewed',     bg: 'bg-violet-50',   text: 'text-violet-600' },
+  { status: 'Closed',      label: 'Closed',       bg: 'bg-slate-50',    text: 'text-slate-400' },
 ];
 
 export default function DashboardPage() {

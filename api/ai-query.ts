@@ -175,7 +175,7 @@ async function executeTool(name: string, args: Record<string, unknown>): Promise
       let q = supabase
         .from('orders')
         .select('order_no, customer_name, technician:technicians(name)')
-        .in('status', ['Job Done', 'Reviewed', 'Closed']);
+        .in('status', ['Job Done', 'Reviewed']);
       if (ids.length > 0) q = q.not('id', 'in', `(${ids.join(',')})`);
       const { data } = await q;
       return data ?? [];

@@ -26,11 +26,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const isPdf = fileUrl.match(/\.pdf($|\?)/i) || fileType === 'application/pdf';
+    const mimeType: string = isPdf ? 'application/pdf' : (fileType ?? 'image/jpeg');
+
+    // Fetch the file and encode as base64 so the model actually sees the content
+    const fileResp = await fetch(fileUrl);
+    if (!fileResp.ok) return res.status(502).json({ error: 'Could not fetch receipt file' });
+    const buffer = Buffer.from(await fileResp.arrayBuffer());
+    const base64 = buffer.toString('base64');
+    const dataUri = `data:${mimeType};base64,${base64}`;
 
     const userContent: OpenAI.Chat.Completions.ChatCompletionUserMessageParam['content'] = isPdf
-      ? `A payment receipt PDF was uploaded: ${fileUrl}\nExtract the payment details.`
+      ? [
+          // GPT-4o document understanding — passes the actual PDF bytes
+          { type: 'file', file: { filename: 'receipt.pdf', file_data: dataUri } } as any,
+          { type: 'text', text: 'Extract the payment details from this receipt.' },
+        ]
       : [
-          { type: 'image_url', image_url: { url: fileUrl } },
+          { type: 'image_url', image_url: { url: dataUri } },
           { type: 'text', text: 'Extract the payment details from this receipt.' },
         ];
 

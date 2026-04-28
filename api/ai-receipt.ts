@@ -8,15 +8,15 @@ const RECEIPT_PROMPT = `You are a payment receipt reading assistant for a field 
 Extract the payment details from the receipt and return a short, clean summary suitable for an accountant's record.
 Format it like this (skip any line if info is not found):
 
-Status: Successful
-Amount: RM 37.30
-Date: 11 Apr 2026, 8:49 PM
-Reference: 942291110Q
-Recipient: CHAMP LEGACY
-Account: 562405663190
-Bank: Maybank
+Status: <status>
+Amount: <amount>
+Date: <date>
+Reference: <reference number>
+Recipient: <recipient name>
+Account: <account number>
+Bank: <bank name>
 
-Only output the lines above. No extra explanation.`;
+Replace each placeholder with the actual value from the receipt. Only output the lines above. No extra explanation.`;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });

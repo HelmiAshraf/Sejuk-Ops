@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getOrderById, assignTechnician, updateOrderStatus, updateCustomerDetails, updateServiceDetails } from '../../api/orders';
+import { getOrderById, assignTechnician, updateCustomerDetails, updateServiceDetails } from '../../api/orders';
 import { getAuditLog } from '../../api/audit';
 import { getCompletionByOrderId } from '../../api/completions';
 import { getPhotosByOrderId } from '../../api/storage';

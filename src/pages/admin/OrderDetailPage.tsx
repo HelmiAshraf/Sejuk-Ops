@@ -68,12 +68,6 @@ export default function OrderDetailPage() {
     }
   };
 
-  const handleClose = async () => {
-    if (!order) return;
-    await updateOrderStatus(order.id, order.status, 'Closed', 'admin', user?.name ?? 'admin');
-    load();
-  };
-
   const startEditCustomer = () => {
     if (!order) return;
     setCustomerForm({

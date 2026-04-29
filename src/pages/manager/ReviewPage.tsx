@@ -143,7 +143,7 @@ export default function ReviewPage() {
         review_notes: reviewNotes,
         outcome,
       }, { onConflict: 'order_id' });
-      await updateOrderStatus(selected.id, 'Job Done', 'Reviewed', 'manager', user?.name ?? '', { outcome });
+      await updateOrderStatus(selected.id, 'Job Done', 'Closed', 'manager', user?.name ?? '', { outcome });
       setSelected(null);
       loadPending();
     } finally {

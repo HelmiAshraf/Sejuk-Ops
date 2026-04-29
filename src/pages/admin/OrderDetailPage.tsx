@@ -154,9 +154,6 @@ export default function OrderDetailPage() {
               <User size={14} /> {order.assigned_technician_id ? 'Re-assign' : 'Assign Technician'}
             </Button>
           )}
-          {order.status === 'Reviewed' && user?.role === 'admin' && (
-            <Button size="sm" onClick={handleClose}>Close Order</Button>
-          )}
         </div>
       </div>
 

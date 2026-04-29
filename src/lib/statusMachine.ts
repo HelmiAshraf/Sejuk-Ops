@@ -9,7 +9,7 @@ const TRANSITIONS: Record<OrderStatus, Transition[]> = {
   New: [{ to: 'Assigned', allowedRoles: ['admin'] }],
   Assigned: [{ to: 'In Progress', allowedRoles: ['technician'] }],
   'In Progress': [{ to: 'Job Done', allowedRoles: ['technician'] }],
-  'Job Done': [{ to: 'Reviewed', allowedRoles: ['manager'] }],
+  'Job Done': [{ to: 'Closed', allowedRoles: ['manager'] }],
   Reviewed: [{ to: 'Closed', allowedRoles: ['admin', 'manager'] }],
   Closed: [],
 };
